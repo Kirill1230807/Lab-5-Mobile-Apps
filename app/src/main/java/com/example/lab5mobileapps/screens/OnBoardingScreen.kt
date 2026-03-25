@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color.Companion.Black
+import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -42,12 +44,19 @@ fun OnBoardingScreenUI(
             text = "Гід по місту",
             fontSize = 30.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.White,
+            color = White,
         )
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Button(onClick = onNavigateToEnterName) {
+        Button(
+            onClick = onNavigateToEnterName,
+            modifier = Modifier.fillMaxWidth(0.8f),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = White,
+                contentColor = Black
+            )
+        ) {
             Text("Ввести ім'я")
         }
 
@@ -56,7 +65,14 @@ fun OnBoardingScreenUI(
         Button(
             onClick = {
                 onNavigateToMain(userName)
-            }) {
+            },
+            enabled = userName.isNotBlank(),
+            modifier = Modifier.fillMaxWidth(0.8f),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = White,
+                contentColor = Black
+            )
+        ) {
             if (userName.isNotBlank()) {
                 Text("Привіт, $userName! Розпочати")
             } else {
