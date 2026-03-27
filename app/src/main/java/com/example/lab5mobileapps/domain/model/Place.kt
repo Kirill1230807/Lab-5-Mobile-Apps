@@ -1,4 +1,4 @@
-package com.example.lab5mobileapps.model
+package com.example.lab5mobileapps.domain.model
 
 data class Place(
     val id: Int, val name: String,

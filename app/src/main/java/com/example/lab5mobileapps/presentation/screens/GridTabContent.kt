@@ -1,0 +1,116 @@
+package com.example.lab5mobileapps.presentation.screens
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import com.example.lab5mobileapps.data.repositoryImpl.PlaceRepositoryImpl
+import com.example.lab5mobileapps.presentation.navigation.DetailsRoute
+import com.example.lab5mobileapps.presentation.navigation.GridMainRoute
+import com.example.lab5mobileapps.presentation.screenStates.PlaceScreenState
+import com.example.lab5mobileapps.presentation.viewmodel.PlaceGridViewModel
+import com.example.lab5mobileapps.presentation.viewmodel.PlaceGridViewModelFactory
+
+@Composable
+fun GridTabContent(
+    viewModel: PlaceGridViewModel = viewModel(
+        factory = PlaceGridViewModelFactory(
+            PlaceRepositoryImpl()
+        )
+    )
+) {
+    val nestedNavController = rememberNavController()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    NavHost(navController = nestedNavController, startDestination = GridMainRoute) {
+
+        composable<GridMainRoute> {
+
+            when (val state = uiState) {
+                is PlaceScreenState.Loading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                }
+
+                is PlaceScreenState.Error -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(text = state.message, color = MaterialTheme.colorScheme.error)
+                    }
+                }
+
+                is PlaceScreenState.Success -> {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Тільки обрані")
+                            Checkbox(
+                                checked = state.sortAscending,
+                                onCheckedChange = { viewModel.setFavoriteFilter(it) }
+                            )
+                        }
+
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(2),
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(8.dp)
+                        ) {
+                            items(state.places) { place ->
+                                Card(
+                                    modifier = Modifier
+                                        .padding(8.dp)
+                                        .aspectRatio(1f)
+                                        .clickable {
+                                            nestedNavController.navigate(
+                                                DetailsRoute(
+                                                    place.id
+                                                )
+                                            )
+                                        }
+                                ) {
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier.fillMaxSize()
+                                    ) {
+                                        Text(
+                                            text = place.name,
+                                            style = MaterialTheme.typography.titleMedium,
+                                            textAlign = TextAlign.Center,
+                                            modifier = Modifier.padding(8.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        composable<DetailsRoute> { backStackEntry ->
+            val args = backStackEntry.toRoute<DetailsRoute>()
+            DetailScreen(
+                placeId = args.placeId,
+                onBackClick = { nestedNavController.popBackStack() }
+            )
+        }
+    }
+}

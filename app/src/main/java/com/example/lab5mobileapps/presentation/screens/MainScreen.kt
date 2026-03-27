@@ -1,4 +1,4 @@
-package com.example.lab5mobileapps.screens
+package com.example.lab5mobileapps.presentation.screens
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,10 +21,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.lab5mobileapps.model.Place
-import com.example.lab5mobileapps.navigation.ListMainRoute
-import com.example.lab5mobileapps.navigation.GridMainRoute
-import com.example.lab5mobileapps.navigation.ProfileTabRoute
+import com.example.lab5mobileapps.data.repositoryImpl.PlaceRepositoryImpl
+import com.example.lab5mobileapps.domain.model.Place
+import com.example.lab5mobileapps.domain.repository.PlaceRepository
+import com.example.lab5mobileapps.presentation.navigation.ListMainRoute
+import com.example.lab5mobileapps.presentation.navigation.GridMainRoute
+import com.example.lab5mobileapps.presentation.navigation.ProfileTabRoute
 
 data class BottomNavItem<T : Any>(
     val route: T,
@@ -32,19 +34,19 @@ data class BottomNavItem<T : Any>(
     val icon: ImageVector
 )
 
-val mockPlaces = mutableStateListOf(
-    Place(1, "Центральний парк", "Великий парк для прогулянок у центрі міста.", true),
-    Place(2, "Національний музей", "Історичний музей з унікальними експонатами.", false),
-    Place(3, "Стара фортеця", "Пам'ятка архітектури 16 століття.", true),
-    Place(4, "Аквапарк", "Розважальний комплекс для всієї родини.", false),
-    Place(5, "ТЦ Майдан", "Торговий центр у центрі міста.", false),
-    Place(6, "ТЦ Формаркет", "Торговий центр із багатьма магазинами.", false),
-    Place(7, "Калинівський ринок", "Ринок, де ти знайдеш все: від серветок до ракет.", true),
-    Place(8, "Аквапарк", "Розважальний комплекс для всієї родини.", false),
-    Place(9, "Аквапарк", "Розважальний комплекс для всієї родини.", false),
-    Place(10, "Аквапарк", "Розважальний комплекс для всієї родини.", false),
-    Place(11, "Ботанічний сад", "Величезна колекція екзотичних рослин.", true)
-)
+//val mockPlaces = mutableStateListOf(
+//    Place(1, "Центральний парк", "Великий парк для прогулянок у центрі міста.", true),
+//    Place(2, "Національний музей", "Історичний музей з унікальними експонатами.", false),
+//    Place(3, "Стара фортеця", "Пам'ятка архітектури 16 століття.", true),
+//    Place(4, "Аквапарк", "Розважальний комплекс для всієї родини.", false),
+//    Place(5, "ТЦ Майдан", "Торговий центр у центрі міста.", false),
+//    Place(6, "ТЦ Формаркет", "Торговий центр із багатьма магазинами.", false),
+//    Place(7, "Калинівський ринок", "Ринок, де ти знайдеш все: від серветок до ракет.", true),
+//    Place(8, "Аквапарк", "Розважальний комплекс для всієї родини.", false),
+//    Place(9, "Аквапарк", "Розважальний комплекс для всієї родини.", false),
+//    Place(10, "Аквапарк", "Розважальний комплекс для всієї родини.", false),
+//    Place(11, "Ботанічний сад", "Величезна колекція екзотичних рослин.", true)
+//)
 
 @Composable
 fun MainScreen(userName: String) {

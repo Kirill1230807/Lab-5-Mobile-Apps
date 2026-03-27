@@ -1,4 +1,4 @@
-package com.example.lab5mobileapps.ui.theme
+package com.example.lab5mobileapps.presentation.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

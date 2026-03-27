@@ -1,4 +1,4 @@
-package com.example.lab5mobileapps.screens
+package com.example.lab5mobileapps.presentation.screens
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -13,7 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import com.example.lab5mobileapps.R
-import com.example.lab5mobileapps.ui.theme.MainColor
+import com.example.lab5mobileapps.presentation.ui.theme.MainColor
 
 @Composable
 fun OnBoardingScreenUI(

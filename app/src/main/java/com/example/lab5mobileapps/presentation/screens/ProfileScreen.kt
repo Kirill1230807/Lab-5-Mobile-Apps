@@ -1,4 +1,4 @@
-package com.example.lab5mobileapps.screens
+package com.example.lab5mobileapps.presentation.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

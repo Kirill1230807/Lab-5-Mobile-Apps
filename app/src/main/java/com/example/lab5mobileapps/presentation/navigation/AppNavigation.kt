@@ -1,4 +1,4 @@
-package com.example.lab5mobileapps.navigation
+package com.example.lab5mobileapps.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -7,9 +7,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.example.lab5mobileapps.screens.EnterNameScreen
-import com.example.lab5mobileapps.screens.MainScreen
-import com.example.lab5mobileapps.screens.OnBoardingScreenUI
+import com.example.lab5mobileapps.data.repositoryImpl.PlaceRepositoryImpl
+import com.example.lab5mobileapps.presentation.screens.EnterNameScreen
+import com.example.lab5mobileapps.presentation.screens.MainScreen
+import com.example.lab5mobileapps.presentation.screens.OnBoardingScreenUI
 
 @Composable
 fun AppNavigation() {

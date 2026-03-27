@@ -1,4 +1,4 @@
-package com.example.lab5mobileapps.navigation
+package com.example.lab5mobileapps.presentation.navigation
 
 import kotlinx.serialization.Serializable
 
@@ -18,4 +18,4 @@ object GridMainRoute
 object ProfileTabRoute
 
 @Serializable
-data class DetailsRoute(val name: String, val description: String)
+data class DetailsRoute(val placeId: Int)
