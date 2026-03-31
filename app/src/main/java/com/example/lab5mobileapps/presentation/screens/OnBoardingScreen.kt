@@ -13,7 +13,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import com.example.lab5mobileapps.R
-import com.example.lab5mobileapps.presentation.ui.theme.MainColor
 
 @Composable
 fun OnBoardingScreenUI(
@@ -26,7 +25,7 @@ fun OnBoardingScreenUI(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = MainColor),
+            .background(color = MaterialTheme.colorScheme.background),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -44,7 +43,7 @@ fun OnBoardingScreenUI(
             text = "Гід по місту",
             fontSize = 30.sp,
             fontWeight = FontWeight.Bold,
-            color = White,
+            color = MaterialTheme.colorScheme.onBackground,
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -53,8 +52,7 @@ fun OnBoardingScreenUI(
             onClick = onNavigateToEnterName,
             modifier = Modifier.fillMaxWidth(0.8f),
             colors = ButtonDefaults.buttonColors(
-                containerColor = White,
-                contentColor = Black
+                containerColor = MaterialTheme.colorScheme.primary
             )
         ) {
             Text("Ввести ім'я")
@@ -69,8 +67,7 @@ fun OnBoardingScreenUI(
             enabled = userName.isNotBlank(),
             modifier = Modifier.fillMaxWidth(0.8f),
             colors = ButtonDefaults.buttonColors(
-                containerColor = White,
-                contentColor = Black
+                containerColor = MaterialTheme.colorScheme.primary
             )
         ) {
             if (userName.isNotBlank()) {

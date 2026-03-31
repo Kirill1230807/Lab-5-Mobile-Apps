@@ -5,14 +5,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.example.lab5mobileapps.presentation.navigation.AppNavigation
-import com.example.lab5mobileapps.presentation.ui.theme.Lab5MobileAppsTheme
-
+import com.example.lab5mobileapps.presentation.ui.theme.AppTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            Lab5MobileAppsTheme {
+            AppTheme {
                 AppNavigation()
             }
         }

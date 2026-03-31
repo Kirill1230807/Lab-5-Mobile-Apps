@@ -8,25 +8,24 @@ import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.lab5mobileapps.data.repositoryImpl.PlaceRepositoryImpl
-import com.example.lab5mobileapps.domain.model.Place
-import com.example.lab5mobileapps.domain.repository.PlaceRepository
 import com.example.lab5mobileapps.presentation.navigation.ListMainRoute
 import com.example.lab5mobileapps.presentation.navigation.GridMainRoute
 import com.example.lab5mobileapps.presentation.navigation.ProfileTabRoute
+import com.example.lab5mobileapps.presentation.ui.theme.*
 
 data class BottomNavItem<T : Any>(
     val route: T,
@@ -62,7 +61,10 @@ fun MainScreen(userName: String) {
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            ) {
                 bottomNavList.forEach { item ->
                     NavigationBarItem(
                         selected = currentTab == item.route,
@@ -70,7 +72,14 @@ fun MainScreen(userName: String) {
                         icon = {
                             Icon(imageVector = item.icon, contentDescription = null)
                         },
-                        label = { Text(text = item.title) }
+                        label = { Text(text = item.title) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            selectedTextColor = MaterialTheme.colorScheme.onSurface,
+                            indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     )
                 }
             }
