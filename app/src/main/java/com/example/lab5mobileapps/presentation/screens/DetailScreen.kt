@@ -18,7 +18,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -27,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.lab5mobileapps.data.repositoryImpl.PlaceRepositoryImpl
+import com.example.lab5mobileapps.domain.repository.PlaceRepository
 import com.example.lab5mobileapps.presentation.screenStates.PlaceDetailScreenState
 import com.example.lab5mobileapps.presentation.viewmodel.PlaceDetailViewModel
 import com.example.lab5mobileapps.presentation.viewmodel.PlaceDetailViewModelFactory
@@ -37,11 +40,16 @@ import com.example.lab5mobileapps.presentation.viewmodel.PlaceDetailViewModelFac
 fun DetailScreen(
     placeId: Int,
     onBackClick: () -> Unit,
-    viewModel: PlaceDetailViewModel = viewModel(
-        factory = PlaceDetailViewModelFactory(placeId, PlaceRepositoryImpl())
-    )
+    placeRepository: PlaceRepository
 ) {
+    val factory = remember { PlaceDetailViewModelFactory(placeRepository) }
+    val viewModel: PlaceDetailViewModel = viewModel(factory = factory)
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(placeId) {
+        viewModel.loadPlaceDetails(placeId)
+    }
 
     Scaffold(
         topBar = {
@@ -90,7 +98,10 @@ fun DetailScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        Text(text = state.place.description, style = MaterialTheme.typography.bodyLarge)
+                        Text(
+                            text = state.place.description,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
                         Spacer(modifier = Modifier.height(24.dp))
 
 
@@ -114,7 +125,7 @@ fun DetailScreen(
 private fun DetailScreenPreview() {
     DetailScreen(
         placeId = 1,
-        onBackClick = {  },
-        viewModel = viewModel()
+        onBackClick = { },
+        placeRepository = TODO()
     )
 }

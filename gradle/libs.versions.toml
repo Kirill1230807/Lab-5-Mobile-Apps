@@ -11,7 +11,7 @@ kotlin = "2.2.10"
 composeBom = "2024.09.00"
 navigationCompose = "2.9.7"
 kotlinxSerialization = "1.6.3"
-roomVersion = "2.6.1"
+roomVersion = "2.8.4"
 uiTextGoogleFonts = "1.6.3"
 
 [libraries]

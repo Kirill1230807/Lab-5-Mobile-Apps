@@ -13,6 +13,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.lab5mobileapps.domain.repository.PlaceRepository
+import com.example.lab5mobileapps.domain.repository.SettingsRepository
 import com.example.lab5mobileapps.presentation.navigation.ListMainRoute
 import com.example.lab5mobileapps.presentation.navigation.GridMainRoute
 import com.example.lab5mobileapps.presentation.navigation.ProfileTabRoute
@@ -27,7 +29,9 @@ data class BottomNavItem<T : Any>(
 @Composable
 fun MainScreen(
     userName: String,
-    onNameChange: (String) -> Unit
+    onNameChange: (String) -> Unit,
+    placeRepository: PlaceRepository,
+    settingsRepository: SettingsRepository
 ) {
     var currentTab by remember { mutableStateOf<Any>(ListMainRoute) }
 
@@ -69,8 +73,8 @@ fun MainScreen(
                 .fillMaxSize()
         ) {
             when (currentTab) {
-                is ListMainRoute -> ListTabContent()
-                is GridMainRoute -> GridTabContent()
+                is ListMainRoute -> ListTabContent(placeRepository, settingsRepository)
+                is GridMainRoute -> GridTabContent(placeRepository, settingsRepository)
                 is ProfileTabRoute -> {
                     ProfileScreen(
                         userName = userName,
@@ -86,7 +90,11 @@ fun MainScreen(
 @Composable
 private fun MainScreenPreview() {
     AppTheme {
-        MainScreen(userName = "Кирило", onNameChange = {})
+        MainScreen(
+            userName = "Кирило", onNameChange = {},
+            placeRepository = TODO(),
+            settingsRepository = TODO()
+        )
     }
 }
 
@@ -94,6 +102,10 @@ private fun MainScreenPreview() {
 @Composable
 private fun MainScreenPreviewDarkMode() {
     AppTheme {
-        MainScreen(userName = "Кирило", onNameChange = {})
+        MainScreen(
+            userName = "Кирило", onNameChange = {},
+            placeRepository = TODO(),
+            settingsRepository = TODO()
+        )
     }
 }

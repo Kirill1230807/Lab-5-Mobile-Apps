@@ -31,17 +31,17 @@ fun AppNavigation() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val database = remember { AppDatabase.getDatabase(context, scope) }
+
     val placeRepository = remember { PlaceRepositoryImpl(database.placeDao()) }
-    val repository = remember { SettingsRepositoryImpl(context) }
-    val factory = remember { SettingsViewModelFactory(repository) }
+    val settingsRepository = remember { SettingsRepositoryImpl(context) }
+
+    val factory = remember { SettingsViewModelFactory(settingsRepository) }
     val settingsViewModel: SettingsViewModel = viewModel(factory = factory)
 
     val savedName by settingsViewModel.userName.collectAsState()
 
     if (savedName == null) {
-        Box(
-            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
-        ) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
         }
         return
@@ -77,7 +77,9 @@ fun AppNavigation() {
         composable<MainScreenRoute> {
             MainScreen(
                 userName = savedName ?: "",
-                onNameChange = { newName -> settingsViewModel.saveUserName(newName) }
+                onNameChange = { newName -> settingsViewModel.saveUserName(newName) },
+                placeRepository = placeRepository,
+                settingsRepository = settingsRepository
             )
         }
     }

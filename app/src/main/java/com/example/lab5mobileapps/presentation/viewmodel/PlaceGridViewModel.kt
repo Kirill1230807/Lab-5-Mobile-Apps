@@ -5,58 +5,78 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.lab5mobileapps.domain.model.Place
 import com.example.lab5mobileapps.domain.repository.PlaceRepository
+import com.example.lab5mobileapps.domain.repository.SettingsRepository
 import com.example.lab5mobileapps.presentation.screenStates.PlaceScreenState
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
-class PlaceGridViewModel(private val placeRepository: PlaceRepository) : ViewModel() {
+class PlaceGridViewModel(
+    private val placeRepository: PlaceRepository,
+    private val settingsRepository: SettingsRepository
+) : ViewModel() {
+
     private val _uiState = MutableStateFlow<PlaceScreenState>(PlaceScreenState.Loading)
     val uiState: StateFlow<PlaceScreenState> = _uiState.asStateFlow()
 
     private var currentPlaces: List<Place> = emptyList()
-    private var isFavouriteOn = false
-
 
     init {
         loadPlaces()
     }
 
     private fun loadPlaces() {
-        _uiState.value = PlaceScreenState.Loading
         viewModelScope.launch {
-            delay(1000)
             try {
-                currentPlaces = placeRepository.getAllPlaces()
-                updateState()
+                combine(
+                    placeRepository.getAllPlaces(),
+                    settingsRepository.isSortAscending
+                ) { places, isAscending ->
+                    currentPlaces = places
+
+                    val sortedList = if (isAscending) {
+                        places.sortedBy { it.name }
+                    } else {
+                        places.sortedByDescending { it.name }
+                    }
+
+                    PlaceScreenState.Success(sortedList, isAscending)
+                }.collect { newState ->
+                    _uiState.value = newState
+                }
             } catch (e: Exception) {
                 _uiState.value = PlaceScreenState.Error("Помилка: ${e.message}")
             }
         }
     }
 
-    fun setFavoriteFilter(isChecked: Boolean) {
-        isFavouriteOn = isChecked
-        updateState()
+    fun setSortAscending(ascending: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.saveSortAscending(ascending)
+        }
     }
 
-    private fun updateState() {
-        val sortedList = if (isFavouriteOn) {
-            currentPlaces.filter { it.isFavourite }
-        } else {
-            currentPlaces.sortedByDescending { it.name }
+    fun toggleFavorite(placeId: Int) {
+        val placeToUpdate = currentPlaces.find { it.id == placeId }
+        placeToUpdate?.let { place ->
+            viewModelScope.launch {
+                val updatedPlace = place.copy(isFavourite = !place.isFavourite)
+                placeRepository.updatePlace(updatedPlace)
+            }
         }
-        _uiState.value = PlaceScreenState.Success(sortedList, isFavouriteOn)
     }
 }
 
-class PlaceGridViewModelFactory(private val repository: PlaceRepository) : ViewModelProvider.Factory {
+class PlaceGridViewModelFactory(
+    private val placeRepository: PlaceRepository,
+    private val settingsRepository: SettingsRepository
+) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(PlaceGridViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return PlaceGridViewModel(repository) as T
+            return PlaceGridViewModel(placeRepository, settingsRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

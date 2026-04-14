@@ -22,6 +22,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.lab5mobileapps.data.repositoryImpl.PlaceRepositoryImpl
+import com.example.lab5mobileapps.domain.repository.PlaceRepository
+import com.example.lab5mobileapps.domain.repository.SettingsRepository
 import com.example.lab5mobileapps.presentation.navigation.DetailsRoute
 import com.example.lab5mobileapps.presentation.navigation.ListMainRoute
 import com.example.lab5mobileapps.presentation.screenStates.PlaceScreenState
@@ -30,13 +32,13 @@ import com.example.lab5mobileapps.presentation.viewmodel.PlaceListViewModelFacto
 
 @Composable
 fun ListTabContent(
-    viewModel: PlaceListViewModel = viewModel(
-        factory = PlaceListViewModelFactory(
-            PlaceRepositoryImpl()
-        )
-    )
+    placeRepository: PlaceRepository,
+    settingsRepository: SettingsRepository
 ) {
     val nestedNavController = rememberNavController()
+
+    val factory = remember { PlaceListViewModelFactory(placeRepository, settingsRepository) }
+    val viewModel: PlaceListViewModel = viewModel(factory = factory)
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -116,7 +118,8 @@ fun ListTabContent(
             val args = backStackEntry.toRoute<DetailsRoute>()
             DetailScreen(
                 placeId = args.placeId,
-                onBackClick = { nestedNavController.popBackStack() }
+                onBackClick = { nestedNavController.popBackStack() },
+                placeRepository = placeRepository
             )
         }
     }
@@ -125,6 +128,9 @@ fun ListTabContent(
 @Preview(showSystemUi = true)
 @Composable
 private fun ListTabContentPreview() {
-    ListTabContent()
+    ListTabContent(
+        placeRepository = TODO(),
+        settingsRepository = TODO()
+    )
 }
 

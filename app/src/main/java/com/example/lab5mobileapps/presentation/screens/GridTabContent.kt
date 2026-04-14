@@ -19,6 +19,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.lab5mobileapps.data.repositoryImpl.PlaceRepositoryImpl
+import com.example.lab5mobileapps.domain.repository.PlaceRepository
+import com.example.lab5mobileapps.domain.repository.SettingsRepository
 import com.example.lab5mobileapps.presentation.navigation.DetailsRoute
 import com.example.lab5mobileapps.presentation.navigation.GridMainRoute
 import com.example.lab5mobileapps.presentation.screenStates.PlaceScreenState
@@ -27,13 +29,14 @@ import com.example.lab5mobileapps.presentation.viewmodel.PlaceGridViewModelFacto
 
 @Composable
 fun GridTabContent(
-    viewModel: PlaceGridViewModel = viewModel(
-        factory = PlaceGridViewModelFactory(
-            PlaceRepositoryImpl()
-        )
-    )
+    placeRepository: PlaceRepository,
+    settingsRepository: SettingsRepository
 ) {
     val nestedNavController = rememberNavController()
+
+    val factory = remember { PlaceGridViewModelFactory(placeRepository, settingsRepository) }
+    val viewModel: PlaceGridViewModel = viewModel(factory = factory)
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     NavHost(navController = nestedNavController, startDestination = GridMainRoute) {
@@ -62,10 +65,10 @@ fun GridTabContent(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Тільки обрані")
-                            Checkbox(
+                            Text("Сортування: ${if (state.sortAscending) "А - Я" else "Я - А"}")
+                            Switch(
                                 checked = state.sortAscending,
-                                onCheckedChange = { viewModel.setFavoriteFilter(it) }
+                                onCheckedChange = { viewModel.setSortAscending(it) }
                             )
                         }
 
@@ -110,7 +113,8 @@ fun GridTabContent(
             val args = backStackEntry.toRoute<DetailsRoute>()
             DetailScreen(
                 placeId = args.placeId,
-                onBackClick = { nestedNavController.popBackStack() }
+                onBackClick = { nestedNavController.popBackStack() },
+                placeRepository = placeRepository
             )
         }
     }
@@ -119,5 +123,8 @@ fun GridTabContent(
 @Preview
 @Composable
 private fun GridTabContentPreview() {
-    GridTabContent()
+    GridTabContent(
+        placeRepository = TODO(),
+        settingsRepository = TODO()
+    )
 }
