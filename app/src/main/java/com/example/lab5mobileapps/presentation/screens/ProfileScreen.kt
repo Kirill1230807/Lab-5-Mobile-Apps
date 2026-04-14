@@ -68,7 +68,7 @@ fun ProfileScreen(
 
         OutlinedTextField(
             value = userName,
-            onValueChange = onNameChange,
+            onValueChange = { onNameChange(it) },
             label = { Text("Ім'я користувача") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(0.8f)

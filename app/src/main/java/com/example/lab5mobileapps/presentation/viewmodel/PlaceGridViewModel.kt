@@ -29,7 +29,7 @@ class PlaceGridViewModel(private val placeRepository: PlaceRepository) : ViewMod
         viewModelScope.launch {
             delay(1000)
             try {
-                currentPlaces = placeRepository.getPlaces()
+                currentPlaces = placeRepository.getAllPlaces()
                 updateState()
             } catch (e: Exception) {
                 _uiState.value = PlaceScreenState.Error("Помилка: ${e.message}")

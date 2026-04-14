@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable object EnterNameScreenRoute
 
-@Serializable data class MainScreenRoute(val userName: String)
+@Serializable object MainScreenRoute
 
 @Serializable
 object ListMainRoute

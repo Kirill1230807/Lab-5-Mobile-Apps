@@ -1,5 +1,6 @@
 package com.example.lab5mobileapps.presentation.screens
 
+import android.content.res.Configuration
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -13,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import com.example.lab5mobileapps.R
+import com.example.lab5mobileapps.presentation.ui.theme.AppTheme
 
 @Composable
 fun OnBoardingScreenUI(
@@ -21,6 +23,12 @@ fun OnBoardingScreenUI(
     onNavigateToMain: (String) -> Unit
 ) {
     var userName by remember(savedName) { mutableStateOf(savedName) }
+
+    LaunchedEffect(savedName) {
+        if (savedName.isNotBlank()) {
+            onNavigateToMain(savedName)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -62,7 +70,7 @@ fun OnBoardingScreenUI(
 
         Button(
             onClick = {
-                onNavigateToMain(userName)
+                onNavigateToMain(savedName)
             },
             enabled = userName.isNotBlank(),
             modifier = Modifier.fillMaxWidth(0.8f),
@@ -70,8 +78,8 @@ fun OnBoardingScreenUI(
                 containerColor = MaterialTheme.colorScheme.primary
             )
         ) {
-            if (userName.isNotBlank()) {
-                Text("Привіт, $userName! Розпочати")
+            if (savedName.isNotBlank()) {
+                Text("Привіт, $savedName! Розпочати")
             } else {
                 Text("Розпочати")
             }
@@ -79,12 +87,30 @@ fun OnBoardingScreenUI(
     }
 }
 
-@Preview(showSystemUi = true)
+@Preview(showSystemUi = true, name = "Light Mode")
 @Composable
 private fun OnBoardingScreenUIPreview() {
-    OnBoardingScreenUI(
-        savedName = "",
-        onNavigateToEnterName = { },
-        onNavigateToMain = { }
-    )
+    AppTheme {
+        OnBoardingScreenUI(
+            savedName = "",
+            onNavigateToEnterName = { },
+            onNavigateToMain = { }
+        )
+    }
+}
+
+@Preview(
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    name = "Dark Mode"
+)
+@Composable
+private fun OnBoardingScreenUIPreviewDarkMode() {
+    AppTheme {
+        OnBoardingScreenUI(
+            savedName = "",
+            onNavigateToEnterName = { },
+            onNavigateToMain = { }
+        )
+    }
 }

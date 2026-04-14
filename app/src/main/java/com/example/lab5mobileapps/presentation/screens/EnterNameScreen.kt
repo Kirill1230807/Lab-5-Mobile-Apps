@@ -1,5 +1,6 @@
 package com.example.lab5mobileapps.presentation.screens
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.lab5mobileapps.presentation.ui.theme.AppTheme
 
 @Composable
 fun EnterNameScreen(
@@ -77,10 +79,22 @@ fun EnterNameScreen(
     }
 }
 
-@Preview
+@Preview(showSystemUi = true, name = "Light Mode")
 @Composable
 private fun EnterNameScreenPreview() {
-    EnterNameScreen(
-        onSaveClick = {}
-    )
+    AppTheme {
+        EnterNameScreen(
+            onSaveClick = {}
+        )
+    }
+}
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
+@Composable
+private fun EnterNameScreenPreviewDarkMode() {
+    AppTheme {
+        EnterNameScreen(
+            onSaveClick = {}
+        )
+    }
 }
