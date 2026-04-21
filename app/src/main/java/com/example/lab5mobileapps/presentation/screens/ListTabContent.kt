@@ -1,5 +1,6 @@
 package com.example.lab5mobileapps.presentation.screens
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -8,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
@@ -44,127 +46,128 @@ fun ListTabContent(
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    var showAddDialog by remember { mutableStateOf(false) }
 
     NavHost(navController = nestedNavController, startDestination = ListMainRoute) {
 
         composable<ListMainRoute> {
-            Scaffold(
-                floatingActionButton = {
-                    FloatingActionButton(
-                        onClick = { showAddDialog = true },
-                        containerColor = MaterialTheme.colorScheme.primary
+
+            when (val state = uiState) {
+                is PlaceScreenState.Loading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = null)
+                        CircularProgressIndicator()
                     }
                 }
-            ) { paddingValues ->
-                Box(modifier = Modifier.padding(paddingValues)) {
-                    when (val state = uiState) {
-                        is PlaceScreenState.Loading -> {
+
+                is PlaceScreenState.Error -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(text = state.message, color = MaterialTheme.colorScheme.error)
+                        Button(onClick = { viewModel.fetchFromNetwork() }) { Text("Повторити") }
+                    }
+                }
+
+                is PlaceScreenState.Success -> {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        if (state.isOffline) {
                             Box(
-                                modifier = Modifier.fillMaxSize(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color.Red.copy(alpha = 0.6f))
+                                    .padding(8.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                CircularProgressIndicator()
+                                Text(
+                                    "Немає підключення. Показані кешовані дані.",
+                                    color = Color.White
+                                )
                             }
                         }
-
-                        is PlaceScreenState.Error -> {
-                            Column(
-                                modifier = Modifier.fillMaxSize(),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                Text(text = state.message, color = MaterialTheme.colorScheme.error)
-                                Button(onClick = { viewModel.fetchFromNetwork() }) { Text("Повторити") }
-                            }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Сортування: ${if (state.sortAscending) "А - Я" else "Я - А"}")
+                            Switch(
+                                checked = state.sortAscending,
+                                onCheckedChange = { viewModel.setSortAscending(it) })
                         }
 
-                        is PlaceScreenState.Success -> {
-                            Column(modifier = Modifier.fillMaxSize()) {
-                                if (state.isOffline) {
-                                    Box(
+                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                            items(state.places, key = { it.id }) { place ->
+                                val dismissState = rememberSwipeToDismissBoxState(
+                                    confirmValueChange = {
+                                        if (it == SwipeToDismissBoxValue.EndToStart) {
+                                            viewModel.deletePlace(place.id)
+                                            true
+                                        } else false
+                                    }
+                                )
+
+                                SwipeToDismissBox(
+                                    state = dismissState,
+                                    enableDismissFromStartToEnd = false,
+                                    backgroundContent = {
+                                        val color by animateColorAsState(
+                                            targetValue = if (dismissState.targetValue == SwipeToDismissBoxValue.EndToStart) {
+                                                Color.Red
+                                            } else {
+                                                Color.Transparent
+                                            }, label = "color"
+                                        )
+
+                                        Box(
+                                            Modifier
+                                                .fillMaxSize()
+                                                .background(color)
+                                                .padding(16.dp),
+                                            contentAlignment = Alignment.CenterEnd
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Delete,
+                                                contentDescription = "Видалити",
+                                                tint = Color.White
+                                            )
+                                        }
+                                    }
+                                ) {
+                                    Card(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .background(Color.Red.copy(alpha = 0.6f))
-                                            .padding(8.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            "Немає підключення. Показані кешовані дані.",
-                                            color = Color.White
-                                        )
-                                    }
-                                }
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text("Сортування: ${if (state.sortAscending) "А - Я" else "Я - А"}")
-                                    Switch(
-                                        checked = state.sortAscending,
-                                        onCheckedChange = { viewModel.setSortAscending(it) })
-                                }
-
-                                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                                    items(state.places, key = { it.id }) { place ->
-                                        val dismissState = rememberSwipeToDismissBoxState(
-                                            confirmValueChange = {
-                                                if (it == SwipeToDismissBoxValue.EndToStart) {
-                                                    viewModel.deletePlace(place.id)
-                                                    true
-                                                } else false
-                                            }
-                                        )
-
-                                        SwipeToDismissBox(
-                                            state = dismissState,
-                                            backgroundContent = {
-                                                Box(
-                                                    Modifier
-                                                        .fillMaxSize()
-                                                        .background(Color.Red)
-                                                        .padding(16.dp),
-                                                    contentAlignment = Alignment.CenterEnd
-                                                ) {
-                                                    Text("Видалити", color = Color.White)
-                                                }
-                                            }
-                                        ) { }
-                                        Card(
+                                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                                            .clickable {
+                                                nestedNavController.navigate(
+                                                    DetailsRoute(place.id)
+                                                )
+                                            }) {
+                                        Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                                                .clickable {
-                                                    nestedNavController.navigate(
-                                                        DetailsRoute(place.id)
-                                                    )
-                                                }) {
-                                            Row(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(16.dp),
-                                                horizontalArrangement = Arrangement.SpaceBetween,
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                Text(
-                                                    text = place.name,
-                                                    modifier = Modifier.padding(16.dp),
-                                                    style = MaterialTheme.typography.titleMedium
+                                                .padding(16.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = place.name,
+                                                modifier = Modifier.padding(16.dp),
+                                                style = MaterialTheme.typography.titleMedium
+                                            )
+                                            IconButton(onClick = {
+                                                viewModel.toggleFavorite(place.id)
+                                            }) {
+                                                Icon(
+                                                    imageVector = if (place.isFavourite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                                    contentDescription = null,
+                                                    tint = if (place.isFavourite) Color.Red else Color.Gray
                                                 )
-                                                IconButton(onClick = {
-                                                    viewModel.toggleFavorite(place.id)
-                                                }) {
-                                                    Icon(
-                                                        imageVector = if (place.isFavourite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                                        contentDescription = null,
-                                                        tint = if (place.isFavourite) Color.Red else Color.Gray
-                                                    )
-                                                }
                                             }
                                         }
                                     }
@@ -173,16 +176,6 @@ fun ListTabContent(
                         }
                     }
                 }
-            }
-
-            if (showAddDialog) {
-                AddPlaceDialog(
-                    onDismiss = { showAddDialog = false },
-                    onSave = { newPlace ->
-                        viewModel.createPlace(newPlace)
-                        showAddDialog = false
-                    }
-                )
             }
         }
 

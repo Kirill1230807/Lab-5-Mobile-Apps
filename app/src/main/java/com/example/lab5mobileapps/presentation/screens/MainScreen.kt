@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
@@ -13,12 +14,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.lab5mobileapps.domain.repository.PlaceRepository
 import com.example.lab5mobileapps.domain.repository.SettingsRepository
+import com.example.lab5mobileapps.presentation.components.AddPlaceDialog
 import com.example.lab5mobileapps.presentation.navigation.ListMainRoute
 import com.example.lab5mobileapps.presentation.navigation.GridMainRoute
 import com.example.lab5mobileapps.presentation.navigation.ProfileTabRoute
 import com.example.lab5mobileapps.presentation.ui.theme.*
+import com.example.lab5mobileapps.presentation.viewmodel.PlaceListViewModel
+import com.example.lab5mobileapps.presentation.viewmodel.PlaceListViewModelFactory
 
 data class BottomNavItem<T : Any>(
     val route: T,
@@ -34,6 +39,10 @@ fun MainScreen(
     settingsRepository: SettingsRepository
 ) {
     var currentTab by remember { mutableStateOf<Any>(ListMainRoute) }
+    val factory = remember { PlaceListViewModelFactory(placeRepository, settingsRepository) }
+    val viewModel: PlaceListViewModel = viewModel(factory = factory)
+
+    var showAddDialog by remember { mutableStateOf(false) }
 
     val bottomNavList = listOf(
         BottomNavItem(route = ListMainRoute, title = "Список", icon = Icons.Default.List),
@@ -65,6 +74,14 @@ fun MainScreen(
                     )
                 }
             }
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { showAddDialog = true },
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null)
+            }
         }
     ) { innerPadding ->
         Box(
@@ -81,6 +98,15 @@ fun MainScreen(
                         onNameChange = onNameChange
                     )
                 }
+            }
+            if (showAddDialog) {
+                AddPlaceDialog(
+                    onDismiss = { showAddDialog = false },
+                    onSave = { newPlace ->
+                        viewModel.createPlace(newPlace)
+                        showAddDialog = false
+                    }
+                )
             }
         }
     }

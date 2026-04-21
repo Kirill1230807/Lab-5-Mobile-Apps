@@ -8,7 +8,8 @@ import kotlinx.coroutines.flow.Flow
 
 class PlaceRepositoryImpl(
     private val placeDao: PlaceDao,
-    private val apiService: PlaceApiService) : PlaceRepository {
+    private val apiService: PlaceApiService
+) : PlaceRepository {
 
 
     override fun getAllPlaces(): Flow<List<Place>> {
@@ -35,7 +36,11 @@ class PlaceRepositoryImpl(
     }
 
     override suspend fun deletePlace(id: String) {
-        apiService.deletePlace(id)
         placeDao.deleteById(id)
+        try {
+            apiService.deletePlace(id)
+        } catch (e: Exception) {
+            
+        }
     }
 }
