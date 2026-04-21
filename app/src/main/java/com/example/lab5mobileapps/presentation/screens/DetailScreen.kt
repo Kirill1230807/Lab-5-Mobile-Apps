@@ -28,7 +28,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.lab5mobileapps.data.repositoryImpl.PlaceRepositoryImpl
 import com.example.lab5mobileapps.domain.repository.PlaceRepository
 import com.example.lab5mobileapps.presentation.screenStates.PlaceDetailScreenState
 import com.example.lab5mobileapps.presentation.viewmodel.PlaceDetailViewModel
@@ -38,7 +37,7 @@ import com.example.lab5mobileapps.presentation.viewmodel.PlaceDetailViewModelFac
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
-    placeId: Int,
+    placeId: String,
     onBackClick: () -> Unit,
     placeRepository: PlaceRepository
 ) {
@@ -124,7 +123,7 @@ fun DetailScreen(
 @Composable
 private fun DetailScreenPreview() {
     DetailScreen(
-        placeId = 1,
+        placeId = "1",
         onBackClick = { },
         placeRepository = TODO()
     )

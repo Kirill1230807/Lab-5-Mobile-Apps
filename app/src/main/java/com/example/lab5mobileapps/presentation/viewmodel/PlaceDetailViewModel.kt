@@ -11,25 +11,22 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class PlaceDetailViewModel(private val placeRepository: PlaceRepository) : ViewModel() {
+class PlaceDetailViewModel(
+    private val placeRepository: PlaceRepository) : ViewModel() {
 
     private val _uiState = MutableStateFlow<PlaceDetailScreenState>(PlaceDetailScreenState.Loading)
     val uiState: StateFlow<PlaceDetailScreenState> = _uiState.asStateFlow()
 
-    fun loadPlaceDetails(id: Int) {
+    fun loadPlaceDetails(id: String) {
         _uiState.value = PlaceDetailScreenState.Loading
 
         viewModelScope.launch {
             try {
-                // Підписуємось на конкретне місце з бази
                 placeRepository.getPlaceById(id).collect { place ->
-                    // Перевіряємо, чи повернула база об'єкт (на випадок, якщо його ще немає)
                     if (place != null) {
-                        // Вираховуємо необхідні для UI параметри
                         val descLength = place.description.length
                         val status = if (place.isFavourite) "В обраному" else "Не в обраному"
 
-                        // Передаємо в UI готовий стан
                         _uiState.value = PlaceDetailScreenState.Success(
                             place = place,
                             descriptionLength = descLength,
@@ -45,17 +42,13 @@ class PlaceDetailViewModel(private val placeRepository: PlaceRepository) : ViewM
         }
     }
 
-    // Якщо на екрані деталей теж є кнопка "сердечко"
     fun toggleFavorite() {
         val currentState = _uiState.value
-        // Перевіряємо, чи ми зараз у стані Success і чи маємо об'єкт
         if (currentState is PlaceDetailScreenState.Success) {
             val updatedPlace =
                 currentState.place.copy(isFavourite = !currentState.place.isFavourite)
 
             viewModelScope.launch {
-                // Відправляємо оновлення в базу.
-                // Завдяки .collect() у функції loadPlaceDetails, екран оновиться автоматично!
                 placeRepository.updatePlace(updatedPlace)
             }
         }

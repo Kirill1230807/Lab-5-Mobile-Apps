@@ -18,4 +18,4 @@ object GridMainRoute
 object ProfileTabRoute
 
 @Serializable
-data class DetailsRoute(val placeId: Int)
+data class DetailsRoute(val placeId: String)

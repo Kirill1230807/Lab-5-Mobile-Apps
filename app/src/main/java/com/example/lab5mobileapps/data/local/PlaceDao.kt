@@ -20,5 +20,11 @@ interface PlaceDao {
     suspend fun updatePlace(place: Place)
 
     @Query("SELECT * FROM places WHERE id = :placeId")
-    fun getPlaceById(placeId: Int): Flow<Place>
+    fun getPlaceById(placeId: String): Flow<Place>
+
+    @Query("DELETE FROM places")
+    suspend fun clearAll()
+
+    @Query("DELETE FROM places WHERE id = :placeId")
+    suspend fun deleteById(placeId: String)
 }

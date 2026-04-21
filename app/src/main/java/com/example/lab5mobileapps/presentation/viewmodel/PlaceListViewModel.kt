@@ -25,6 +25,7 @@ class PlaceListViewModel(
 
     init {
         loadPlaces()
+        fetchFromNetwork()
     }
 
     private fun loadPlaces() {
@@ -52,18 +53,59 @@ class PlaceListViewModel(
         }
     }
 
+    fun fetchFromNetwork() {
+        viewModelScope.launch {
+            try {
+                placeRepository.refreshPlaces()
+                val currentState = _uiState.value
+                if (currentState is PlaceScreenState.Success) {
+                    _uiState.value = currentState.copy(isOffline = false)
+                }
+            } catch (e: Exception) {
+                if (currentPlaces.isNotEmpty()) {
+                    val currentState = _uiState.value
+                    if (currentState is PlaceScreenState.Success) {
+                        _uiState.value = currentState.copy(isOffline = true)
+                    }
+                } else {
+                    _uiState.value = PlaceScreenState.Error("Помилка мережі: ${e.message}")
+                }
+            }
+        }
+    }
+
+    fun deletePlace(id: String) {
+        viewModelScope.launch {
+            try {
+                placeRepository.deletePlace(id)
+            } catch (e: Exception) {
+                _uiState.value = PlaceScreenState.Error("Помилка: ${e.message}")
+            }
+        }
+    }
+
     fun setSortAscending(ascending: Boolean) {
         viewModelScope.launch {
             settingsRepository.saveSortAscending(ascending)
         }
     }
 
-    fun toggleFavorite(placeId: Int) {
+    fun toggleFavorite(placeId: String) {
         val placeToUpdate = currentPlaces.find { it.id == placeId }
         placeToUpdate?.let { place ->
             viewModelScope.launch {
                 val updatedPlace = place.copy(isFavourite = !place.isFavourite)
                 placeRepository.updatePlace(updatedPlace)
+            }
+        }
+    }
+
+    fun createPlace(place: Place) {
+        viewModelScope.launch {
+            try {
+                placeRepository.createPlace(place)
+            } catch (e: Exception) {
+                _uiState.value = PlaceScreenState.Error("Помилка: ${e.message}")
             }
         }
     }

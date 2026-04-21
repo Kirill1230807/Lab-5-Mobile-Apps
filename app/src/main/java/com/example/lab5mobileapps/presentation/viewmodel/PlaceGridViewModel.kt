@@ -58,7 +58,7 @@ class PlaceGridViewModel(
         }
     }
 
-    fun toggleFavorite(placeId: Int) {
+    fun toggleFavorite(placeId: String) {
         val placeToUpdate = currentPlaces.find { it.id == placeId }
         placeToUpdate?.let { place ->
             viewModelScope.launch {

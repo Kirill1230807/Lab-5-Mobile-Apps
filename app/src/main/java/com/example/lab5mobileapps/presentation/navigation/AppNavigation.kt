@@ -16,6 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.lab5mobileapps.data.local.AppDatabase
+import com.example.lab5mobileapps.data.remote.RetrofitClient
 import com.example.lab5mobileapps.data.repositoryImpl.PlaceRepositoryImpl
 import com.example.lab5mobileapps.data.repositoryImpl.SettingsRepositoryImpl
 import com.example.lab5mobileapps.presentation.screens.EnterNameScreen
@@ -31,8 +32,12 @@ fun AppNavigation() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val database = remember { AppDatabase.getDatabase(context, scope) }
+    val apiService = RetrofitClient.apiService
 
-    val placeRepository = remember { PlaceRepositoryImpl(database.placeDao()) }
+    val placeRepository = remember { PlaceRepositoryImpl(
+        database.placeDao(),
+        apiService = apiService
+    ) }
     val settingsRepository = remember { SettingsRepositoryImpl(context) }
 
     val factory = remember { SettingsViewModelFactory(settingsRepository) }

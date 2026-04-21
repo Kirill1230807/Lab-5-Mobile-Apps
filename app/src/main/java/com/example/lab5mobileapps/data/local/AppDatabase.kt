@@ -12,7 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
-@Database(entities = [Place::class], version = 1, exportSchema = false)
+@Database(entities = [Place::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun placeDao(): PlaceDao
@@ -28,6 +28,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "places_database"
                 )
+                    .fallbackToDestructiveMigration()
                     .addCallback(DatabaseCallback(scope))
                     .build()
                 INSTANCE = instance
@@ -36,7 +37,6 @@ abstract class AppDatabase : RoomDatabase() {
         }
     }
 
-    // Внутрішній клас колбеку
     private class DatabaseCallback(private val scope: CoroutineScope) : RoomDatabase.Callback() {
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)
@@ -47,17 +47,8 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        // Твій хардкодний список переїжджає сюди
         suspend fun populateDatabase(placeDao: PlaceDao) {
             val initialPlaces = listOf(
-                Place(
-                    name = "Чернівецький національний університет імені Юрія Федьковича",
-                    description = "Один з найстаріших і найкрасивіших університетів України...",
-                    category = "Архітектура",
-                    isFavourite = false,
-                    rating = 4.9,
-                    imageRes = R.drawable.image1
-                ),
                 Place(
                     name = "Театральна площа",
                     description = "Центральна площа міста...",
