@@ -3,6 +3,7 @@ package com.example.lab5mobileapps.presentation.navigation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -26,7 +27,7 @@ import com.example.lab5mobileapps.presentation.viewmodel.SettingsViewModel
 import com.example.lab5mobileapps.presentation.viewmodel.SettingsViewModelFactory
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(windowSizeClass: WindowSizeClass) {
     val navController = rememberNavController()
 
     val context = LocalContext.current
@@ -84,7 +85,8 @@ fun AppNavigation() {
                 userName = savedName ?: "",
                 onNameChange = { newName -> settingsViewModel.saveUserName(newName) },
                 placeRepository = placeRepository,
-                settingsRepository = settingsRepository
+                settingsRepository = settingsRepository,
+                windowSizeClass = windowSizeClass
             )
         }
     }

@@ -70,4 +70,6 @@ dependencies {
     implementation(libs.retrofit2.kotlinx.serialization.converter)
     implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json.v1110)
+
+    implementation(libs.androidx.compose.material3.window.size.class1)
 }

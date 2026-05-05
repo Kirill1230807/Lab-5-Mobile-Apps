@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -36,7 +37,8 @@ fun MainScreen(
     userName: String,
     onNameChange: (String) -> Unit,
     placeRepository: PlaceRepository,
-    settingsRepository: SettingsRepository
+    settingsRepository: SettingsRepository,
+    windowSizeClass: WindowSizeClass
 ) {
     var currentTab by remember { mutableStateOf<Any>(ListMainRoute) }
     val factory = remember { PlaceListViewModelFactory(placeRepository, settingsRepository) }
@@ -90,8 +92,8 @@ fun MainScreen(
                 .fillMaxSize()
         ) {
             when (currentTab) {
-                is ListMainRoute -> ListTabContent(placeRepository, settingsRepository)
-                is GridMainRoute -> GridTabContent(placeRepository, settingsRepository)
+                is ListMainRoute -> ListTabContent(placeRepository, settingsRepository, windowSizeClass)
+                is GridMainRoute -> GridTabContent(placeRepository, settingsRepository, windowSizeClass)
                 is ProfileTabRoute -> {
                     ProfileScreen(
                         userName = userName,
@@ -119,7 +121,8 @@ private fun MainScreenPreview() {
         MainScreen(
             userName = "Кирило", onNameChange = {},
             placeRepository = TODO(),
-            settingsRepository = TODO()
+            settingsRepository = TODO(),
+            windowSizeClass = TODO(),
         )
     }
 }
@@ -131,7 +134,8 @@ private fun MainScreenPreviewDarkMode() {
         MainScreen(
             userName = "Кирило", onNameChange = {},
             placeRepository = TODO(),
-            settingsRepository = TODO()
+            settingsRepository = TODO(),
+            windowSizeClass = TODO()
         )
     }
 }

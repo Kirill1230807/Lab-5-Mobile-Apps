@@ -15,5 +15,7 @@ data class Place(
     val category: String,
     val isFavourite: Boolean = false,
     val rating: Double = 0.0,
+    val price: Double = 0.0,
+    val contactEmail: String = "",
     val imageRes: Int = 0
 )

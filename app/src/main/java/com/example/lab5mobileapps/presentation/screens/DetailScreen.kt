@@ -98,12 +98,30 @@ fun DetailScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Text(
-                            text = state.place.description,
+                            text = "Опис: ${state.place.description}",
                             style = MaterialTheme.typography.bodyLarge
                         )
                         Spacer(modifier = Modifier.height(24.dp))
-
-
+                        Text(
+                            text = "Рейтинг: ${state.place.rating}",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text(
+                            text = "Категорія: ${state.place.category}",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text(
+                            text = "Ціна: ${state.place.price}",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text(
+                            text = "Контактний email: ${state.place.contactEmail}",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
                         Divider()
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(

@@ -6,6 +6,8 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.*
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,7 +31,8 @@ import com.example.lab5mobileapps.presentation.viewmodel.PlaceGridViewModelFacto
 @Composable
 fun GridTabContent(
     placeRepository: PlaceRepository,
-    settingsRepository: SettingsRepository
+    settingsRepository: SettingsRepository,
+    windowSizeClass: WindowSizeClass
 ) {
     val nestedNavController = rememberNavController()
 
@@ -37,6 +40,14 @@ fun GridTabContent(
     val viewModel: PlaceGridViewModel = viewModel(factory = factory)
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val columnsCount = when (windowSizeClass.widthSizeClass) {
+        WindowWidthSizeClass.Compact -> 2
+        WindowWidthSizeClass.Medium -> 3
+        WindowWidthSizeClass.Expanded -> 4
+        else -> 2
+
+    }
 
     NavHost(navController = nestedNavController, startDestination = GridMainRoute) {
 
@@ -72,7 +83,7 @@ fun GridTabContent(
                         }
 
                         LazyVerticalGrid(
-                            columns = GridCells.Fixed(2),
+                            columns = GridCells.Fixed(columnsCount),
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(8.dp)
                         ) {
@@ -124,6 +135,7 @@ fun GridTabContent(
 private fun GridTabContentPreview() {
     GridTabContent(
         placeRepository = TODO(),
-        settingsRepository = TODO()
+        settingsRepository = TODO(),
+        windowSizeClass = TODO()
     )
 }
