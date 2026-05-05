@@ -20,16 +20,14 @@ fun AddPlaceDialog(
     onDismiss: () -> Unit,
     onSave: (Place) -> Unit
 ) {
-    // Стан для збереження введеного тексту
     var name by remember { mutableStateOf("") }
     var desc by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("") }
 
     AlertDialog(
-        onDismissRequest = onDismiss, // Закриття діалогу при кліку поза ним
+        onDismissRequest = onDismiss,
         title = { Text("Додати нове місце") },
         text = {
-            // Колонка для розміщення текстових полів одне під одним
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
                     value = name,
@@ -53,16 +51,14 @@ fun AddPlaceDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    // Створюємо новий об'єкт Place з введених даних
                     val newPlace = Place(
                         name = name,
                         description = desc,
                         category = category.ifBlank { "Загальна" },
-                        imageRes = 0 // Зображення поки що заглушка (оскільки API зазвичай приймає URL)
+                        imageRes = 0
                     )
-                    onSave(newPlace) // Передаємо створений об'єкт вище
+                    onSave(newPlace)
                 },
-                // Кнопка активна лише якщо поля назви та опису не порожні
                 enabled = name.isNotBlank() && desc.isNotBlank()
             ) {
                 Text("Зберегти")
