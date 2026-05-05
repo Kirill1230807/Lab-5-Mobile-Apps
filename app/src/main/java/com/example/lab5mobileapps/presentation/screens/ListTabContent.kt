@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.lab5mobileapps.presentation.screens
 
 import androidx.compose.animation.animateColorAsState
@@ -8,7 +10,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -30,13 +31,23 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.lab5mobileapps.domain.repository.PlaceRepository
 import com.example.lab5mobileapps.domain.repository.SettingsRepository
-import com.example.lab5mobileapps.presentation.components.AddPlaceDialog
 import com.example.lab5mobileapps.presentation.navigation.DetailsRoute
 import com.example.lab5mobileapps.presentation.navigation.ListMainRoute
 import com.example.lab5mobileapps.presentation.screenStates.PlaceScreenState
 import com.example.lab5mobileapps.presentation.viewmodel.PlaceListViewModel
 import com.example.lab5mobileapps.presentation.viewmodel.PlaceListViewModelFactory
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ListTabContent(
     placeRepository: PlaceRepository,
@@ -44,20 +55,15 @@ fun ListTabContent(
     windowSizeClass: WindowSizeClass
 ) {
     val nestedNavController = rememberNavController()
-
     val factory = remember { PlaceListViewModelFactory(placeRepository, settingsRepository) }
     val viewModel: PlaceListViewModel = viewModel(factory = factory)
-
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
     val isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
-
     var selectedPlaceId by rememberSaveable { mutableStateOf<String?>(null) }
 
     if (isExpanded) {
         // ДВОПАНЕЛЬНИЙ МАКЕТ ДЛЯ ПЛАНШЕТА
         Row(modifier = Modifier.fillMaxSize()) {
-            // Ліва панель (Список)
             Box(modifier = Modifier.weight(1f)) {
                 PlaceListSection(
                     uiState = uiState,
@@ -65,8 +71,6 @@ fun ListTabContent(
                     onPlaceClick = { selectedPlaceId = it }
                 )
             }
-
-            // Права панель (Деталі)
             Box(modifier = Modifier.weight(1f)) {
                 if (selectedPlaceId != null) {
                     DetailScreen(
@@ -85,21 +89,15 @@ fun ListTabContent(
             }
         }
     } else {
-
+        // МАКЕТ ДЛЯ ТЕЛЕФОНУ
         NavHost(navController = nestedNavController, startDestination = ListMainRoute) {
-
             composable<ListMainRoute> {
-
                 when (val state = uiState) {
                     is PlaceScreenState.Loading -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             CircularProgressIndicator()
                         }
                     }
-
                     is PlaceScreenState.Error -> {
                         Column(
                             modifier = Modifier.fillMaxSize(),
@@ -110,8 +108,13 @@ fun ListTabContent(
                             Button(onClick = { viewModel.fetchFromNetwork() }) { Text("Повторити") }
                         }
                     }
-
                     is PlaceScreenState.Success -> {
+                        var isRefreshing by remember { mutableStateOf(false) }
+                        val coroutineScope = rememberCoroutineScope()
+
+                        // Стан для відстеження, яке меню зараз відкрито
+                        var expandedMenuPlaceId by remember { mutableStateOf<String?>(null) }
+
                         Column(modifier = Modifier.fillMaxSize()) {
                             if (state.isOffline) {
                                 Box(
@@ -121,10 +124,7 @@ fun ListTabContent(
                                         .padding(8.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text(
-                                        "Немає підключення. Показані кешовані дані.",
-                                        color = Color.White
-                                    )
+                                    Text("Немає підключення. Показані кешовані дані.", color = Color.White)
                                 }
                             }
                             Row(
@@ -137,76 +137,114 @@ fun ListTabContent(
                                 Text("Сортування: ${if (state.sortAscending) "А - Я" else "Я - А"}")
                                 Switch(
                                     checked = state.sortAscending,
-                                    onCheckedChange = { viewModel.setSortAscending(it) })
+                                    onCheckedChange = { viewModel.setSortAscending(it) }
+                                )
                             }
 
-                            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                                items(state.places, key = { it.id }) { place ->
-                                    val dismissState = rememberSwipeToDismissBoxState(
-                                        confirmValueChange = {
-                                            if (it == SwipeToDismissBoxValue.EndToStart) {
-                                                viewModel.deletePlace(place.id)
-                                                true
-                                            } else false
+                            PullToRefreshBox(
+                                isRefreshing = isRefreshing,
+                                onRefresh = {
+                                    coroutineScope.launch {
+                                        isRefreshing = true
+                                        viewModel.fetchFromNetwork()
+                                        isRefreshing = false
+                                    }
+                                },
+                                modifier = Modifier.weight(1f).fillMaxWidth()
+                            ) {
+                                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                                    items(state.places, key = { it.id }) { place ->
+                                        val transitionState = remember {
+                                            MutableTransitionState(false).apply { targetState = true }
                                         }
-                                    )
 
-                                    SwipeToDismissBox(
-                                        state = dismissState,
-                                        enableDismissFromStartToEnd = false,
-                                        backgroundContent = {
-                                            val color by animateColorAsState(
-                                                targetValue = if (dismissState.targetValue == SwipeToDismissBoxValue.EndToStart) {
-                                                    Color.Red
-                                                } else {
-                                                    Color.Transparent
-                                                }, label = "color"
+                                        androidx.compose.animation.AnimatedVisibility(
+                                            visibleState = transitionState,
+                                            enter = fadeIn(animationSpec = tween(500)) + slideInVertically(
+                                                animationSpec = tween(500),
+                                                initialOffsetY = { it / 2 }
+                                            ),
+                                            exit = fadeOut(animationSpec = tween(300)) + shrinkVertically(
+                                                animationSpec = tween(300)
+                                            ),
+                                            modifier = Modifier.animateItem()
+                                        ) {
+                                            val dismissState = rememberSwipeToDismissBoxState(
+                                                confirmValueChange = {
+                                                    if (it == SwipeToDismissBoxValue.EndToStart) {
+                                                        transitionState.targetState = false
+                                                        viewModel.deletePlace(place.id)
+                                                        true
+                                                    } else false
+                                                }
                                             )
 
-                                            Box(
-                                                Modifier
-                                                    .fillMaxSize()
-                                                    .background(color)
-                                                    .padding(16.dp),
-                                                contentAlignment = Alignment.CenterEnd
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Delete,
-                                                    contentDescription = "Видалити",
-                                                    tint = Color.White
-                                                )
-                                            }
-                                        }
-                                    ) {
-                                        Card(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                                                .clickable {
-                                                    nestedNavController.navigate(
-                                                        DetailsRoute(place.id)
+                                            SwipeToDismissBox(
+                                                state = dismissState,
+                                                enableDismissFromStartToEnd = false,
+                                                backgroundContent = {
+                                                    val color by animateColorAsState(
+                                                        targetValue = if (dismissState.targetValue == SwipeToDismissBoxValue.EndToStart) Color.Red else Color.Transparent,
+                                                        label = "color"
                                                     )
-                                                }) {
-                                            Row(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(16.dp),
-                                                horizontalArrangement = Arrangement.SpaceBetween,
-                                                verticalAlignment = Alignment.CenterVertically
+                                                    Box(
+                                                        Modifier.fillMaxSize().background(color).padding(16.dp),
+                                                        contentAlignment = Alignment.CenterEnd
+                                                    ) {
+                                                        Icon(Icons.Default.Delete, contentDescription = "Видалити", tint = Color.White)
+                                                    }
+                                                }
                                             ) {
-                                                Text(
-                                                    text = place.name,
-                                                    modifier = Modifier.padding(16.dp),
-                                                    style = MaterialTheme.typography.titleMedium
-                                                )
-                                                IconButton(onClick = {
-                                                    viewModel.toggleFavorite(place.id)
-                                                }) {
-                                                    Icon(
-                                                        imageVector = if (place.isFavourite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                                        contentDescription = null,
-                                                        tint = if (place.isFavourite) Color.Red else Color.Gray
-                                                    )
+                                                Card(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                                                        .combinedClickable(
+                                                            onClick = { nestedNavController.navigate(DetailsRoute(place.id)) },
+                                                            onLongClick = { expandedMenuPlaceId = place.id }
+                                                        )
+                                                ) {
+                                                    Box { // Обгортка для Card-контенту та DropdownMenu
+                                                        Row(
+                                                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                                            verticalAlignment = Alignment.CenterVertically
+                                                        ) {
+                                                            Text(
+                                                                text = place.name,
+                                                                modifier = Modifier.padding(16.dp),
+                                                                style = MaterialTheme.typography.titleMedium
+                                                            )
+                                                            IconButton(onClick = { viewModel.toggleFavorite(place.id) }) {
+                                                                Icon(
+                                                                    imageVector = if (place.isFavourite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                                                    contentDescription = null,
+                                                                    tint = if (place.isFavourite) Color.Red else Color.Gray
+                                                                )
+                                                            }
+                                                        }
+
+                                                        // Контекстне меню
+                                                        DropdownMenu(
+                                                            expanded = expandedMenuPlaceId == place.id,
+                                                            onDismissRequest = { expandedMenuPlaceId = null }
+                                                        ) {
+                                                            DropdownMenuItem(
+                                                                text = { Text(if (place.isFavourite) "Видалити з обраного" else "Додати до обраного") },
+                                                                onClick = {
+                                                                    viewModel.toggleFavorite(place.id)
+                                                                    expandedMenuPlaceId = null
+                                                                }
+                                                            )
+                                                            DropdownMenuItem(
+                                                                text = { Text("Видалити", color = MaterialTheme.colorScheme.error) },
+                                                                onClick = {
+                                                                    viewModel.deletePlace(place.id)
+                                                                    expandedMenuPlaceId = null
+                                                                }
+                                                            )
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
@@ -230,6 +268,7 @@ fun ListTabContent(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PlaceListSection(
     uiState: PlaceScreenState,
@@ -242,7 +281,6 @@ fun PlaceListSection(
                 CircularProgressIndicator()
             }
         }
-
         is PlaceScreenState.Error -> {
             Column(
                 modifier = Modifier.fillMaxSize(),
@@ -253,8 +291,11 @@ fun PlaceListSection(
                 Button(onClick = { viewModel.fetchFromNetwork() }) { Text("Повторити") }
             }
         }
-
         is PlaceScreenState.Success -> {
+            var isRefreshing by remember { mutableStateOf(false) }
+            val coroutineScope = rememberCoroutineScope()
+            var expandedMenuPlaceId by remember { mutableStateOf<String?>(null) }
+
             Column(modifier = Modifier.fillMaxSize()) {
                 if (state.isOffline) {
                     Box(
@@ -276,59 +317,108 @@ fun PlaceListSection(
                     Text("Сортування: ${if (state.sortAscending) "А - Я" else "Я - А"}")
                     Switch(
                         checked = state.sortAscending,
-                        onCheckedChange = { viewModel.setSortAscending(it) })
+                        onCheckedChange = { viewModel.setSortAscending(it) }
+                    )
                 }
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(state.places, key = { it.id }) { place ->
-                        val dismissState = rememberSwipeToDismissBoxState(
-                            confirmValueChange = {
-                                if (it == SwipeToDismissBoxValue.EndToStart) {
-                                    viewModel.deletePlace(place.id); true
-                                } else false
+
+                PullToRefreshBox(
+                    isRefreshing = isRefreshing,
+                    onRefresh = {
+                        coroutineScope.launch {
+                            isRefreshing = true
+                            viewModel.fetchFromNetwork()
+                            isRefreshing = false
+                        }
+                    },
+                    modifier = Modifier.weight(1f).fillMaxWidth()
+                ) {
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        items(state.places, key = { it.id }) { place ->
+                            val transitionState = remember {
+                                MutableTransitionState(false).apply { targetState = true }
                             }
-                        )
-                        SwipeToDismissBox(
-                            state = dismissState, enableDismissFromStartToEnd = false,
-                            backgroundContent = {
-                                val color by animateColorAsState(targetValue = if (dismissState.targetValue == SwipeToDismissBoxValue.EndToStart) Color.Red else Color.Transparent)
-                                Box(
-                                    Modifier
-                                        .fillMaxSize()
-                                        .background(color)
-                                        .padding(16.dp),
-                                    contentAlignment = Alignment.CenterEnd
+
+                            androidx.compose.animation.AnimatedVisibility(
+                                visibleState = transitionState,
+                                enter = fadeIn(animationSpec = tween(500)) + slideInVertically(
+                                    animationSpec = tween(500),
+                                    initialOffsetY = { it / 2 }
+                                ),
+                                exit = fadeOut(animationSpec = tween(300)) + shrinkVertically(
+                                    animationSpec = tween(300)
+                                ),
+                                modifier = Modifier.animateItem()
+                            ) {
+                                val dismissState = rememberSwipeToDismissBoxState(
+                                    confirmValueChange = {
+                                        if (it == SwipeToDismissBoxValue.EndToStart) {
+                                            transitionState.targetState = false
+                                            viewModel.deletePlace(place.id)
+                                            true
+                                        } else false
+                                    }
+                                )
+                                SwipeToDismissBox(
+                                    state = dismissState, enableDismissFromStartToEnd = false,
+                                    backgroundContent = {
+                                        val color by animateColorAsState(targetValue = if (dismissState.targetValue == SwipeToDismissBoxValue.EndToStart) Color.Red else Color.Transparent, label = "color")
+                                        Box(
+                                            Modifier.fillMaxSize().background(color).padding(16.dp),
+                                            contentAlignment = Alignment.CenterEnd
+                                        ) {
+                                            Icon(Icons.Default.Delete, contentDescription = "Видалити", tint = Color.White)
+                                        }
+                                    }
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = "Видалити",
-                                        tint = Color.White
-                                    )
-                                }
-                            }
-                        ) {
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                                    .clickable { onPlaceClick(place.id) }) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = place.name,
-                                        modifier = Modifier.padding(16.dp),
-                                        style = MaterialTheme.typography.titleMedium
-                                    )
-                                    IconButton(onClick = { viewModel.toggleFavorite(place.id) }) {
-                                        Icon(
-                                            imageVector = if (place.isFavourite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                            contentDescription = null,
-                                            tint = if (place.isFavourite) Color.Red else Color.Gray
-                                        )
+                                    Card(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                                            .combinedClickable(
+                                                onClick = { onPlaceClick(place.id) },
+                                                onLongClick = { expandedMenuPlaceId = place.id }
+                                            )
+                                    ) {
+                                        Box {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text(
+                                                    text = place.name,
+                                                    modifier = Modifier.padding(16.dp),
+                                                    style = MaterialTheme.typography.titleMedium
+                                                )
+                                                IconButton(onClick = { viewModel.toggleFavorite(place.id) }) {
+                                                    Icon(
+                                                        imageVector = if (place.isFavourite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                                        contentDescription = null,
+                                                        tint = if (place.isFavourite) Color.Red else Color.Gray
+                                                    )
+                                                }
+                                            }
+
+                                            DropdownMenu(
+                                                expanded = expandedMenuPlaceId == place.id,
+                                                onDismissRequest = { expandedMenuPlaceId = null }
+                                            ) {
+                                                DropdownMenuItem(
+                                                    text = { Text(if (place.isFavourite) "Видалити з обраного" else "Додати до обраного") },
+                                                    onClick = {
+                                                        viewModel.toggleFavorite(place.id)
+                                                        expandedMenuPlaceId = null
+                                                    }
+                                                )
+                                                DropdownMenuItem(
+                                                    text = { Text("Видалити", color = MaterialTheme.colorScheme.error) },
+                                                    onClick = {
+                                                        viewModel.deletePlace(place.id)
+                                                        expandedMenuPlaceId = null
+                                                    }
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }

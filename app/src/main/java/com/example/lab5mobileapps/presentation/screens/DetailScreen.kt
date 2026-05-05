@@ -32,6 +32,20 @@ import com.example.lab5mobileapps.domain.repository.PlaceRepository
 import com.example.lab5mobileapps.presentation.screenStates.PlaceDetailScreenState
 import com.example.lab5mobileapps.presentation.viewmodel.PlaceDetailViewModel
 import com.example.lab5mobileapps.presentation.viewmodel.PlaceDetailViewModelFactory
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.Card
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -102,25 +116,76 @@ fun DetailScreen(
                             style = MaterialTheme.typography.bodyLarge
                         )
                         Spacer(modifier = Modifier.height(24.dp))
-                        Text(
-                            text = "Рейтинг: ${state.place.rating}",
-                            style = MaterialTheme.typography.bodyLarge
+
+                        var isExpanded by remember { mutableStateOf(false) }
+
+                        // Анімація для зміни кольору фону заголовка
+                        val headerColor by animateColorAsState(
+                            targetValue = if (isExpanded) MaterialTheme.colorScheme.primaryContainer
+                            else
+                                MaterialTheme.colorScheme.surfaceVariant,
+                            label = "headerColor"
                         )
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Text(
-                            text = "Категорія: ${state.place.category}",
-                            style = MaterialTheme.typography.bodyLarge
+
+                        // Анімація для повороту іконки (від 0 до 180 градусів)
+                        val rotationAngle by animateFloatAsState(
+                            targetValue = if (isExpanded) 180f else 0f,
+                            label = "rotationAngle"
                         )
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Text(
-                            text = "Ціна: ${state.place.price}",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Text(
-                            text = "Контактний email: ${state.place.contactEmail}",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
+
+                        Card(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(headerColor)
+                                        .clickable { isExpanded = !isExpanded }
+                                        .padding(16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Додаткова інформація",
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                    Icon(
+                                        imageVector = Icons.Default.KeyboardArrowDown,
+                                        contentDescription = "Розгорнути",
+                                        modifier = Modifier.rotate(rotationAngle)
+                                    )
+                                }
+                                // Анімація для видимості контенту (висота)
+                                AnimatedVisibility(visible = isExpanded) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp)
+                                    ) {
+                                        Text(
+                                            text = "Рейтинг: ${state.place.rating}",
+                                            style = MaterialTheme.typography.bodyLarge
+                                        )
+                                        Spacer(modifier = Modifier.height(24.dp))
+                                        Text(
+                                            text = "Категорія: ${state.place.category}",
+                                            style = MaterialTheme.typography.bodyLarge
+                                        )
+                                        Spacer(modifier = Modifier.height(24.dp))
+                                        Text(
+                                            text = "Ціна: ${state.place.price}",
+                                            style = MaterialTheme.typography.bodyLarge
+                                        )
+                                        Spacer(modifier = Modifier.height(24.dp))
+                                        Text(
+                                            text = "Контактний email: ${state.place.contactEmail}",
+                                            style = MaterialTheme.typography.bodyLarge
+                                        )
+                                    }
+                                }
+                            }
+                        }
                         Spacer(modifier = Modifier.height(24.dp))
                         Divider()
                         Spacer(modifier = Modifier.height(8.dp))
