@@ -60,12 +60,11 @@ fun AddPlaceDialog(
 ) {
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
-
-    // Визначаємо, чи це планшет (ширина >= 600dp)
+    
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 600
 
-    // Стани значень полів
+    // Значення полів
     var name by remember { mutableStateOf("") }
     var desc by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("") }
@@ -74,7 +73,7 @@ fun AddPlaceDialog(
     var rating by remember { mutableStateOf(0f) }
     var isFavourite by remember { mutableStateOf(false) }
 
-    // Стани для відстеження фокусу
+    // Відстеження фокусу
     var nameTouched by remember { mutableStateOf(false) }
     var nameWasFocused by remember { mutableStateOf(false) }
     var descTouched by remember { mutableStateOf(false) }
@@ -109,10 +108,8 @@ fun AddPlaceDialog(
 
     Dialog(
         onDismissRequest = onDismiss,
-        // usePlatformDefaultWidth = false дозволяє нам керувати шириною самостійно
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        // Контейнер, що обробляє кліки поза формою та піднімає контент над клавіатурою
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -123,24 +120,22 @@ fun AddPlaceDialog(
                     })
                 }
                 .imePadding(),
-            contentAlignment = Alignment.Center // Центруємо форму на великих екранах
+            contentAlignment = Alignment.Center
         ) {
             Surface(
                 modifier = if (isTablet) {
-                    // Адаптація для планшету (Expanded)
                     Modifier
                         .width(600.dp)
-                        .heightIn(max = (configuration.screenHeightDp * 0.9f).dp) // Щоб не виходила за межі
+                        .heightIn(max = (configuration.screenHeightDp * 0.9f).dp)
                         .padding(vertical = 24.dp)
                 } else {
-                    // Адаптація для телефону (Compact)
                     Modifier
                         .fillMaxSize()
                         .padding(16.dp)
                 },
                 shape = RoundedCornerShape(16.dp),
                 color = MaterialTheme.colorScheme.background,
-                tonalElevation = if (isTablet) 8.dp else 0.dp // Додаємо легку тінь на планшеті для краси
+                tonalElevation = if (isTablet) 8.dp else 0.dp
             ) {
                 Column(
                     modifier = Modifier

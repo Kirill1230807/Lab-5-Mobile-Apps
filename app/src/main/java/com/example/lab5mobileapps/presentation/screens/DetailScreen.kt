@@ -156,7 +156,7 @@ fun DetailScreen(
                                         modifier = Modifier.rotate(rotationAngle)
                                     )
                                 }
-                                // Анімація для видимості контенту (висота)
+                                // Анімація для видимості контенту
                                 AnimatedVisibility(visible = isExpanded) {
                                     Column(
                                         modifier = Modifier
