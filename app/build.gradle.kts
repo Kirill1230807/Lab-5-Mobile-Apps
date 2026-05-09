@@ -72,4 +72,10 @@ dependencies {
     implementation(libs.kotlinx.serialization.json.v1110)
 
     implementation(libs.androidx.compose.material3.window.size.class1)
+
+    implementation(libs.androidx.compose.material3.window.size.class1)
+
+    implementation(libs.play.services.location)
+
+    implementation(libs.coil.compose)
 }
