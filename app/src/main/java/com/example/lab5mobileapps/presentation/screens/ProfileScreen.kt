@@ -117,7 +117,7 @@ fun ProfileScreen(
                 )
             } == true -> "RATIONALE"
 
-            else -> "PERMANENTLY_DENIED" // Якщо відхилено і rationale == false, значить вибрано "Не питати знову"
+            else -> "PERMANENTLY_DENIED"
         }
     }
 
@@ -127,7 +127,6 @@ fun ProfileScreen(
     ) { success ->
         if (success) {
             hasAvatar = true
-            // Оновлюємо ключ, щоб Coil перезавантажив нове фото замість старого кешованого
             avatarImageKey = System.currentTimeMillis().toString()
         }
     }
@@ -135,7 +134,7 @@ fun ProfileScreen(
     var locationState by remember { mutableStateOf<LocationState>(LocationState.Idle) }
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
 
-    // Константи
+    // Константи для геолокації
     val targetLatitude = 50.4501
     val targetLongitude = 30.5234
 
@@ -256,7 +255,6 @@ fun ProfileScreen(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
                 Button(onClick = {
-                    // Програмний перехід до системних налаштувань
                     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                         data = Uri.fromParts("package", context.packageName, null)
                     }
@@ -296,7 +294,6 @@ fun ProfileScreen(
         Text(text = "Моя геолокація", fontWeight = FontWeight.Bold, fontSize = 18.sp)
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Відображення станів
         when (val state = locationState) {
             is LocationState.Idle -> {
                 Text(
@@ -354,7 +351,6 @@ fun ProfileScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(onClick = {
-            // Перевіряємо наявність дозволів перед викликом
             val hasFine = ContextCompat.checkSelfPermission(
                 context,
                 Manifest.permission.ACCESS_FINE_LOCATION
